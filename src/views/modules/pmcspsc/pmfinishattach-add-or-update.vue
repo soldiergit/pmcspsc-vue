@@ -4,17 +4,17 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="16rem" style="width: 94%; margin: 0 auto">
-    <el-form-item label="项目立项id" prop="itemInfoId">
-      <el-input v-model="dataForm.itemInfoId" placeholder="项目立项id"></el-input>
+    <el-form-item label="结题id" prop="finishInfoId">
+      <el-input v-model="dataForm.finishInfoId" placeholder="结题id"></el-input>
     </el-form-item>
     <el-form-item label="附件名称" prop="attachName">
       <el-input v-model="dataForm.attachName" placeholder="附件名称"></el-input>
     </el-form-item>
-    <el-form-item label="附件存放路径" prop="attachPath">
-      <el-input v-model="dataForm.attachPath" placeholder="附件存放路径"></el-input>
+    <el-form-item label="附件路径" prop="attachPath">
+      <el-input v-model="dataForm.attachPath" placeholder="附件路径"></el-input>
     </el-form-item>
-    <el-form-item label="是否删除" prop="attachIsDel">
-      <el-input v-model="dataForm.attachIsDel" placeholder="是否删除"></el-input>
+    <el-form-item label="删除标识" prop="attachIsDel">
+      <el-input v-model="dataForm.attachIsDel" placeholder="删除标识"></el-input>
     </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -31,23 +31,23 @@
         visible: false,
         dataForm: {
           attachId: 0,
-          itemInfoId: '',
+          finishInfoId: '',
           attachName: '',
           attachPath: '',
           attachIsDel: ''
         },
         dataRule: {
-          itemInfoId: [
-            { required: true, message: '项目立项id不能为空', trigger: 'blur' }
+          finishInfoId: [
+            { required: true, message: '结题id不能为空', trigger: 'blur' }
           ],
           attachName: [
             { required: true, message: '附件名称不能为空', trigger: 'blur' }
           ],
           attachPath: [
-            { required: true, message: '附件存放路径不能为空', trigger: 'blur' }
+            { required: true, message: '附件路径不能为空', trigger: 'blur' }
           ],
           attachIsDel: [
-            { required: true, message: '是否删除不能为空', trigger: 'blur' }
+            { required: true, message: '删除标识不能为空', trigger: 'blur' }
           ]
         }
       }
@@ -60,15 +60,15 @@
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.attachId) {
             this.$http({
-              url: this.$http.adornUrl(`/generator/pmitemattach/info/${this.dataForm.attachId}`),
+              url: this.$http.adornUrl(`/generator/pmfinishattach/info/${this.dataForm.attachId}`),
               method: 'get',
               params: this.$http.adornParams()
             }).then(({data}) => {
               if (data && data.code === 0) {
-                this.dataForm.itemInfoId = data.pmItemAttach.itemInfoId
-                this.dataForm.attachName = data.pmItemAttach.attachName
-                this.dataForm.attachPath = data.pmItemAttach.attachPath
-                this.dataForm.attachIsDel = data.pmItemAttach.attachIsDel
+                this.dataForm.finishInfoId = data.pmFinishAttach.finishInfoId
+                this.dataForm.attachName = data.pmFinishAttach.attachName
+                this.dataForm.attachPath = data.pmFinishAttach.attachPath
+                this.dataForm.attachIsDel = data.pmFinishAttach.attachIsDel
               }
             })
           }
@@ -79,11 +79,11 @@
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             this.$http({
-              url: this.$http.adornUrl(`/generator/pmitemattach/${!this.dataForm.attachId ? 'save' : 'update'}`),
+              url: this.$http.adornUrl(`/generator/pmfinishattach/${!this.dataForm.attachId ? 'save' : 'update'}`),
               method: 'post',
               data: this.$http.adornData({
                 'attachId': this.dataForm.attachId || undefined,
-                'itemInfoId': this.dataForm.itemInfoId,
+                'finishInfoId': this.dataForm.finishInfoId,
                 'attachName': this.dataForm.attachName,
                 'attachPath': this.dataForm.attachPath,
                 'attachIsDel': this.dataForm.attachIsDel
@@ -96,6 +96,7 @@
                   duration: 1500,
                   onClose: () => {
                     this.visible = false
+                    //  回调父页面中‘@refreshDataList’定义的刷新方法
                     this.$emit('refreshDataList')
                   }
                 })

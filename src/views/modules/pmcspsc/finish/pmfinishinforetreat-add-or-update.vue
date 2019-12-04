@@ -4,8 +4,8 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="16rem" style="width: 94%; margin: 0 auto">
-    <el-form-item label="项目立项申请Id" prop="itemInfoId">
-      <el-input v-model="dataForm.itemInfoId" :disabled="true" placeholder="项目立项申请Id"></el-input>
+    <el-form-item label="项目结题Id" prop="finishInfoId">
+      <el-input v-model="dataForm.finishInfoId" :disabled="true" placeholder="项目结题Id"></el-input>
     </el-form-item>
     <el-form-item label="回退意见" prop="retreatAdvise">
       <el-input
@@ -33,12 +33,12 @@
         visible: false,
         dataForm: {
           retreatId: 0,
-          itemInfoId: '',
+          finishInfoId: '',
           retreatAdvise: '',
           retreatIsDel: ''
         },
         dataRule: {
-          itemInfoId: [
+          finishInfoId: [
             { required: true, message: '项目立项申请Id不能为空', trigger: 'blur' }
           ],
           retreatAdvise: [
@@ -49,24 +49,23 @@
     },
     methods: {
       init (id) {
-        this.dataForm.itemInfoId = id || 0
-        // this.dataForm.retreatId = id || 0
+        this.dataForm.finishInfoId = id || 0
         this.visible = true
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
-          if (this.dataForm.retreatId) {
-            this.$http({
-              url: this.$http.adornUrl(`/pm/item/retreat/info/${this.dataForm.retreatId}`),
-              method: 'get',
-              params: this.$http.adornParams()
-            }).then(({data}) => {
-              if (data && data.code === 0) {
-                this.dataForm.itemInfoId = data.pmItemInfoRetreat.itemInfoId
-                this.dataForm.retreatAdvise = data.pmItemInfoRetreat.retreatAdvise
-                this.dataForm.retreatIsDel = data.pmItemInfoRetreat.retreatIsDel
-              }
-            })
-          }
+          // if (this.dataForm.retreatId) {
+          //   this.$http({
+          //     url: this.$http.adornUrl(`/pm/item/retreat/info/${this.dataForm.retreatId}`),
+          //     method: 'get',
+          //     params: this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if (data && data.code === 0) {
+          //       this.dataForm.finishInfoId = data.pmItemInfoRetreat.finishInfoId
+          //       this.dataForm.retreatAdvise = data.pmItemInfoRetreat.retreatAdvise
+          //       this.dataForm.retreatIsDel = data.pmItemInfoRetreat.retreatIsDel
+          //     }
+          //   })
+          // }
         })
       },
       // 表单提交
@@ -75,21 +74,21 @@
           if (valid) {
             //  先修改项目状态
             this.$http({
-              url: this.$http.adornUrl('/pm/item/apply'),
+              url: this.$http.adornUrl('/pm/finish/apply'),
               method: 'post',
               params: this.$http.adornParams({
-                'id': this.dataForm.itemInfoId,
+                'id': this.dataForm.finishInfoId,
                 'status': 3
               })
             }).then(({data}) => {
               if (data && data.code === 0) {
                 //  再保存回退信息
                 this.$http({
-                  url: this.$http.adornUrl(`/pm/item/retreat/${!this.dataForm.retreatId ? 'save' : 'update'}`),
+                  url: this.$http.adornUrl(`/pm/finish/retreat/${!this.dataForm.retreatId ? 'save' : 'update'}`),
                   method: 'post',
                   data: this.$http.adornData({
                     'retreatId': this.dataForm.retreatId || undefined,
-                    'itemInfoId': this.dataForm.itemInfoId,
+                    'finishInfoId': this.dataForm.finishInfoId,
                     'retreatAdvise': this.dataForm.retreatAdvise,
                     'retreatIsDel': 0
                   })

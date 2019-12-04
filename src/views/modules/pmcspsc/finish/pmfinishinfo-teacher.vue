@@ -6,8 +6,8 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('pmcspsc:pmfinishinfo:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('pmcspsc:pmfinishinfo:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <el-button v-if="isAuth('pm:finish:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
+        <el-button v-if="isAuth('pm:finish:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -34,11 +34,23 @@
         align="center"
         label="立项项目id">
       </el-table-column>
+      <!--<el-table-column-->
+        <!--prop="finishIsDel"-->
+        <!--header-align="center"-->
+        <!--align="center"-->
+        <!--label="删除标识">-->
+      <!--</el-table-column>-->
       <el-table-column
-        prop="finishIsDel"
+        prop="finishInfoStatus"
         header-align="center"
         align="center"
-        label="删除标识">
+        label="审核状态">
+        <template slot-scope="scope">
+          <el-tag type="small" v-if="scope.row.finishInfoStatus === 0"><span>未提交</span></el-tag>
+          <el-tag type="small" v-if="scope.row.finishInfoStatus === 1"><span>待审核</span></el-tag>
+          <el-tag type="small" v-if="scope.row.finishInfoStatus === 2"><span>通过</span></el-tag>
+          <el-tag type="small" v-if="scope.row.finishInfoStatus === 3"><span>未通过</span></el-tag>
+        </template>
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -47,8 +59,11 @@
         width="150"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.finishInfoId)">修改</el-button>
-          <el-button type="text" size="small" @click="deleteHandle(scope.row.finishInfoId)">删除</el-button>
+          <el-button type="text" size="small" v-if="scope.row.finishInfoStatus === 0" @click="submitHandle(scope.row.finishInfoId, 1)">提交</el-button>
+          <el-button type="text" size="small" v-if="scope.row.finishInfoStatus === 0 || scope.row.finishInfoStatus === 3" @click="addOrUpdateHandle(scope.row.finishInfoId)">修改</el-button>
+          <el-button type="text" size="small" v-if="scope.row.finishInfoStatus === 0 || scope.row.finishInfoStatus === 3" @click="deleteHandle(scope.row.finishInfoId)">删除</el-button>
+          <el-button type="text" size="small" v-if="scope.row.finishInfoStatus === 3" @click="retreatListHandle(scope.row.finishInfoId)">回退意见</el-button>
+          <el-button type="text" size="small" @click="detailHandle(scope.row.finishInfoId)">详情</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -63,11 +78,15 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+    <retreat-list v-if="retreatListVisible" ref="retreatList" @refreshDataList="getDataList"></retreat-list>
+    <detail v-if="detailVisible" ref="detail" @refreshDataList="getDataList"></detail>
   </div>
 </template>
 
 <script>
   import AddOrUpdate from './pmfinishinfo-add-or-update'
+  import RetreatList from './pmfinishinforetreat-list'
+  import Detail from './detail'
   export default {
     data () {
       return {
@@ -80,11 +99,15 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false
+        addOrUpdateVisible: false,
+        retreatListVisible: false,
+        detailVisible: false
       }
     },
     components: {
-      AddOrUpdate
+      AddOrUpdate,
+      RetreatList,
+      Detail
     },
     activated () {
       this.getDataList()
@@ -94,7 +117,7 @@
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/pmcspsc/pmfinishinfo/list'),
+          url: this.$http.adornUrl('/pm/finish/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
@@ -134,6 +157,50 @@
           this.$refs.addOrUpdate.init(id)
         })
       },
+      // 查看回退意见
+      retreatListHandle (id) {
+        this.retreatListVisible = true
+        this.$nextTick(() => {
+          this.$refs.retreatList.init(id)
+        })
+      },
+      // 详情
+      detailHandle (id) {
+        this.detailVisible = true
+        this.$nextTick(() => {
+          this.$refs.detail.init(id)
+        })
+      },
+      // 审批
+      submitHandle (id, status) {
+        this.$confirm(`确定提交操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/pm/finish/apply'),
+            method: 'post',
+            params: this.$http.adornParams({
+              'id': id,
+              'status': status
+            })
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
       // 删除
       deleteHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
@@ -145,7 +212,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/pmcspsc/pmfinishinfo/delete'),
+            url: this.$http.adornUrl('/pm/finish/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {

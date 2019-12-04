@@ -132,7 +132,7 @@
           <el-button type="text" size="small" v-if="scope.row.itemInfoStatus === 0" @click="submitHandle(scope.row.itemInfoId, 1)">提交</el-button>
           <el-button type="text" size="small" v-if="scope.row.itemInfoStatus === 0 || scope.row.itemInfoStatus === 3" @click="addOrUpdateHandle(scope.row.itemInfoId)">修改</el-button>
           <el-button type="text" size="small" v-if="scope.row.itemInfoStatus === 0 || scope.row.itemInfoStatus === 3" @click="deleteHandle(scope.row.itemInfoId)">删除</el-button>
-          <el-button type="text" size="small" v-if="scope.row.itemInfoStatus === 3" @click="retreatHandle(scope.row.itemInfoId)">回退意见</el-button>
+          <el-button type="text" size="small" v-if="scope.row.itemInfoStatus === 3" @click="retreatListHandle(scope.row.itemInfoId)">回退意见</el-button>
           <el-button type="text" size="small" @click="detailHandle(scope.row.itemInfoId)">详情</el-button>
         </template>
       </el-table-column>
@@ -148,17 +148,17 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
-    <retreat-add v-if="retreatAddVisible" ref="retreatAdd" @refreshDataList="getDataList"></retreat-add>
-    <retreat v-if="retreatListVisible" ref="retreat" @refreshDataList="getDataList"></retreat>
+    <!--<retreat-add v-if="retreatAddVisible" ref="retreatAdd" @refreshDataList="getDataList"></retreat-add>-->
+    <retreat-list v-if="retreatListVisible" ref="retreatList" @refreshDataList="getDataList"></retreat-list>
     <detail v-if="detailVisible" ref="detail" @refreshDataList="getDataList"></detail>
   </div>
 </template>
 
 <script>
   import AddOrUpdate from './pmiteminfo-add-or-update'
-  import RetreatAdd from './pmiteminforetreat-add-or-update'
-  import Retreat from './pmiteminforetreat-list'
-  import Detail from './pmiteminfo-info'
+  // import RetreatAdd from './pmiteminforetreat-add-or-update'
+  import RetreatList from './pmiteminforetreat-list'
+  import Detail from './detail'
   export default {
     data () {
       return {
@@ -179,8 +179,8 @@
     },
     components: {
       AddOrUpdate,
-      RetreatAdd,
-      Retreat,
+      // RetreatAdd,
+      RetreatList,
       Detail
     },
     activated () {
@@ -240,10 +240,10 @@
         })
       },
       // 查看回退意见
-      retreatHandle (id) {
+      retreatListHandle (id) {
         this.retreatListVisible = true
         this.$nextTick(() => {
-          this.$refs.retreat.init(id)
+          this.$refs.retreatList.init(id)
         })
       },
       // 详情

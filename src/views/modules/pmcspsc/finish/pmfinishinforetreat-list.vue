@@ -8,7 +8,7 @@
       border
       style="width: 100%;">
       <el-table-column
-        prop="itemInfoId"
+        prop="finishInfoId"
         header-align="center"
         align="center"
         label="序号"
@@ -39,7 +39,7 @@
         visible: false,
         dataForm: {
           retreatId: 0,
-          itemInfoId: '',
+          finishInfoId: '',
           retreatAdvise: '',
           retreatIsDel: ''
         }
@@ -50,12 +50,12 @@
         this.dataListLoading = true
         this.visible = true
         this.$http({
-          url: this.$http.adornUrl('/pm/item/retreat/list'),
+          url: this.$http.adornUrl('/pm/finish/retreat/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': 1,
             'limit': 1000,
-            'itemInfoId': id
+            'finishInfoId': id
           })
         }).then(({data}) => {
           if (data && data.code === 0) {

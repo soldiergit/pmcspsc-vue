@@ -108,6 +108,7 @@
                   duration: 1500,
                   onClose: () => {
                     this.visible = false
+                    //  回调父页面中‘@refreshDataList’定义的刷新方法
                     this.$emit('refreshDataList')
                   }
                 })

@@ -6,10 +6,15 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('pmcspsc:pmitemattach:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('pmcspsc:pmitemattach:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
+    <el-card>
+      <el-radio-group v-model="finishInfoStatus" @change="getDataList">
+        <el-radio label="1">未审批</el-radio>
+        <el-radio label="2">已通过</el-radio>
+        <el-radio label="3">未通过</el-radio>
+      </el-radio-group>
+    </el-card>
     <el-table
       :data="dataList"
       border
@@ -23,34 +28,28 @@
         width="50">
       </el-table-column>
       <el-table-column
-        prop="attachId"
+        prop="finishInfoId"
         header-align="center"
         align="center"
-        label="id">
+        label="Id">
       </el-table-column>
       <el-table-column
         prop="itemInfoId"
         header-align="center"
         align="center"
-        label="项目立项id">
+        label="立项项目id">
       </el-table-column>
       <el-table-column
-        prop="attachName"
+        prop="finishInfoStatus"
         header-align="center"
         align="center"
-        label="附件名称">
-      </el-table-column>
-      <el-table-column
-        prop="attachPath"
-        header-align="center"
-        align="center"
-        label="附件存放路径">
-      </el-table-column>
-      <el-table-column
-        prop="attachIsDel"
-        header-align="center"
-        align="center"
-        label="是否删除">
+        label="审核状态">
+        <template slot-scope="scope">
+          <el-tag type="small" v-if="scope.row.finishInfoStatus === 0"><span>未提交</span></el-tag>
+          <el-tag type="small" v-if="scope.row.finishInfoStatus === 1"><span>待审核</span></el-tag>
+          <el-tag type="small" v-if="scope.row.finishInfoStatus === 2"><span>通过</span></el-tag>
+          <el-tag type="small" v-if="scope.row.finishInfoStatus === 3"><span>未通过</span></el-tag>
+        </template>
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -59,8 +58,11 @@
         width="150"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.attachId)">修改</el-button>
-          <el-button type="text" size="small" @click="deleteHandle(scope.row.attachId)">删除</el-button>
+          <el-button type="text" size="small" @click="detailHandle(scope.row.finishInfoId)">详情</el-button>
+          <template v-if="scope.row.finishInfoStatus === 1">
+            <el-button type="text" size="small" @click="submitHandle(scope.row.finishInfoId,2)">通过</el-button>
+            <el-button type="text" size="small" @click="retreatAddHandle(scope.row.finishInfoId)">不通过</el-button>
+          </template>
         </template>
       </el-table-column>
     </el-table>
@@ -74,15 +76,18 @@
       layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
-    <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+    <retreat-add v-if="retreatAddVisible" ref="retreatAdd" @refreshDataList="getDataList"></retreat-add>
+    <detail v-if="detailVisible" ref="detail" @refreshDataList="getDataList"></detail>
   </div>
 </template>
 
 <script>
-  import AddOrUpdate from './pmitemattach-add-or-update'
+  import Detail from './detail'
+  import RetreatAdd from './pmfinishinforetreat-add-or-update'
   export default {
     data () {
       return {
+        finishInfoStatus: '1',
         dataForm: {
           key: ''
         },
@@ -92,11 +97,13 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false
+        retreatAddVisible: false,
+        detailVisible: false
       }
     },
     components: {
-      AddOrUpdate
+      Detail,
+      RetreatAdd
     },
     activated () {
       this.getDataList()
@@ -106,11 +113,12 @@
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/pmcspsc/pmitemattach/list'),
+          url: this.$http.adornUrl('/pm/finish/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
             'limit': this.pageSize,
+            'finishInfoStatus': this.finishInfoStatus,
             'key': this.dataForm.key
           })
         }).then(({data}) => {
@@ -146,10 +154,54 @@
           this.$refs.addOrUpdate.init(id)
         })
       },
+      // 不通过，新增回退
+      retreatAddHandle (id) {
+        this.retreatAddVisible = true
+        this.$nextTick(() => {
+          this.$refs.retreatAdd.init(id)
+        })
+      },
+      // 详情
+      detailHandle (id) {
+        this.detailVisible = true
+        this.$nextTick(() => {
+          this.$refs.detail.init(id)
+        })
+      },
+      // 审批
+      submitHandle (id, status) {
+        this.$confirm(`确定提交操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/pm/finish/apply'),
+            method: 'post',
+            params: this.$http.adornParams({
+              'id': id,
+              'status': status
+            })
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
       // 删除
       deleteHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
-          return item.attachId
+          return item.finishInfoId
         })
         this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '删除' : '批量删除'}]操作?`, '提示', {
           confirmButtonText: '确定',
@@ -157,7 +209,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/pmcspsc/pmitemattach/delete'),
+            url: this.$http.adornUrl('/pm/finish/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {

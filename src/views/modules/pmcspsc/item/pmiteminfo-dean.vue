@@ -163,7 +163,7 @@
   import AddOrUpdate from './pmiteminfo-add-or-update'
   import RetreatAdd from './pmiteminforetreat-add-or-update'
   import RetreatList from './pmiteminforetreat-list'
-  import Detail from './pmiteminfo-info'
+  import Detail from './detail'
   export default {
     data () {
       return {
@@ -233,7 +233,6 @@
       },
       // 新增 / 修改
       addOrUpdateHandle (id) {
-        console.log(id)
         this.addOrUpdateVisible = true
         this.$nextTick(() => {
           this.$refs.addOrUpdate.init(id)

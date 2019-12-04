@@ -99,7 +99,6 @@
         visible: false,
         htmlTitle: '立项申请书',
         downloadLoading: false,
-        fileList: [],
         url: '',
         dataForm: {
           itemInfoId: 0,
@@ -141,18 +140,14 @@
             attachIsDel: ''
           }
         },
-        matchTypeList: [{
-          value: 0,
-          label: '团体赛'
-        }, {
-          value: 1,
-          label: '个人赛'
-        }]
+        matchTypeList: [
+          {value: 0, label: '团体赛'},
+          {value: 1, label: '个人赛'}
+        ]
       }
     },
     methods: {
       init (id) {
-        this.fileList.pop()
         this.dataForm.itemInfoId = id || 0
         this.visible = true
         this.$nextTick(() => {

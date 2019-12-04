@@ -6,8 +6,8 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('pmcspsc:pmiteminforetreat:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('pmcspsc:pmiteminforetreat:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <el-button v-if="isAuth('pm:team:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
+        <el-button v-if="isAuth('pm:team:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -23,29 +23,59 @@
         width="50">
       </el-table-column>
       <el-table-column
-        prop="retreatId"
+        prop="teamId"
         header-align="center"
         align="center"
         label="id">
       </el-table-column>
       <el-table-column
+        prop="teamCode"
+        header-align="center"
+        align="center"
+        label="团队编号">
+      </el-table-column>
+      <el-table-column
         prop="itemInfoId"
         header-align="center"
         align="center"
-        label="项目立项申请Id">
+        label="立项id">
       </el-table-column>
       <el-table-column
-        prop="retreatAdvise"
+        prop="itemInfoCode"
         header-align="center"
         align="center"
-        label="回退意见">
+        label="项目编号">
       </el-table-column>
       <el-table-column
-        prop="retreatIsDel"
+        prop="matchTitle"
         header-align="center"
         align="center"
-        label="删除标识">
+        label="赛题">
       </el-table-column>
+      <el-table-column
+        prop="signUpTime"
+        header-align="center"
+        align="center"
+        label="报名时间">
+      </el-table-column>
+      <!--<el-table-column-->
+        <!--prop="awardGrade"-->
+        <!--header-align="center"-->
+        <!--align="center"-->
+        <!--label="获奖级别：国家级：区级">-->
+      <!--</el-table-column>-->
+      <!--<el-table-column-->
+        <!--prop="awardInfo"-->
+        <!--header-align="center"-->
+        <!--align="center"-->
+        <!--label="获奖">-->
+      <!--</el-table-column>-->
+      <!--<el-table-column-->
+        <!--prop="teamInfoIsDel"-->
+        <!--header-align="center"-->
+        <!--align="center"-->
+        <!--label="删除标识">-->
+      <!--</el-table-column>-->
       <el-table-column
         fixed="right"
         header-align="center"
@@ -53,8 +83,9 @@
         width="150"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.retreatId)">修改</el-button>
-          <el-button type="text" size="small" @click="deleteHandle(scope.row.retreatId)">删除</el-button>
+          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.teamId)">修改</el-button>
+          <el-button type="text" size="small" @click="deleteHandle(scope.row.teamId)">删除</el-button>
+          <el-button type="text" size="small" @click="detailHandle(scope.row.teamId)">详情</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -69,11 +100,13 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+    <detail v-if="detailVisible" ref="detail" @refreshDataList="getDataList"></detail>
   </div>
 </template>
 
 <script>
-  import AddOrUpdate from './pmiteminforetreat-add-or-update'
+  import AddOrUpdate from './pmteaminfo-add-or-update'
+  import Detail from './detail'
   export default {
     data () {
       return {
@@ -86,11 +119,13 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false
+        addOrUpdateVisible: false,
+        detailVisible: false
       }
     },
     components: {
-      AddOrUpdate
+      AddOrUpdate,
+      Detail
     },
     activated () {
       this.getDataList()
@@ -100,7 +135,7 @@
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/pmcspsc/pmiteminforetreat/list'),
+          url: this.$http.adornUrl('/pm/team/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
@@ -143,7 +178,7 @@
       // 删除
       deleteHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
-          return item.retreatId
+          return item.teamId
         })
         this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '删除' : '批量删除'}]操作?`, '提示', {
           confirmButtonText: '确定',
@@ -151,7 +186,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/pmcspsc/pmiteminforetreat/delete'),
+            url: this.$http.adornUrl('/pm/team/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {
@@ -168,6 +203,13 @@
               this.$message.error(data.msg)
             }
           })
+        })
+      },
+      // 详情
+      detailHandle (id) {
+        this.detailVisible = true
+        this.$nextTick(() => {
+          this.$refs.detail.init(id)
         })
       }
     }
