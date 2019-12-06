@@ -46,6 +46,7 @@
     data () {
       return {
         visible: false,
+        index: null,
         dataForm: {
           teamId: 0,
           teamCode: '',
@@ -53,12 +54,11 @@
           itemInfoCode: '',
           matchTitle: '',
           signUpTime: '',
-          awardGrade: '',
-          awardInfo: '',
+          awardGrade: 0,
+          awardInfo: 0,
           teamInfoIsDel: 0,
           pmTeamPersonInfoEntities: []
         },
-        index: '',
         dataRule: {
           awardInfo: [
             { required: true, message: '获奖名次不能为空', trigger: 'blur' }
@@ -87,8 +87,6 @@
       init (item, index) {
         this.visible = true
         this.$nextTick(() => {
-          this.$refs['dataForm'].resetFields()
-          console.log(item)
           this.index = index
           this.dataForm = JSON.parse(JSON.stringify(item))
         })

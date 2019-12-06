@@ -1,27 +1,30 @@
 <template>
   <div class="mod-home">
-    <h3>项目介绍</h3>
+    <h2>项目立项过程</h2>
+    <h4>1、填写项目立项申请</h4>
     <ul>
-      <li>renren-fast-vue基于vue、element-ui构建开发，实现<a href="https://gitee.com/renrenio/renren-fast" target="_blank">renren-fast</a>后台管理前端功能，提供一套更优的前端解决方案</li>
-      <li>前后端分离，通过token进行数据交互，可独立部署</li>
-      <li>主题定制，通过scss变量统一一站式定制</li>
-      <li>动态菜单，通过菜单管理统一管理访问路由</li>
-      <li>数据切换，通过mock配置对接口数据／mock模拟数据进行切换</li>
-      <li>发布时，可动态配置CDN静态资源／切换新旧版本</li>
-      <li>演示地址：<a href="http://demo.open.renren.io/renren-fast" target="_blank">http://demo.open.renren.io/renren-fast</a> (账号密码：admin/admin)</li>
+      <li>二级学院作为组赛单位报送每年专业学科竞赛项目，组赛单位的指导老师每年在线填写参加专业学科竞赛项目立项申请信息;</li>
+      <li>然后从系统导出并打印项目立项申请书，将签字盖章后的项目立项申请书扫描为 PDF 文档并作为佐证附件上传到系统;</li>
+      <li>最后将立项申请提交给教务处实验实践科审核。</li>
     </ul>
-    <h3>获取帮助</h3>
+    <h4>2、审核项目立项申请</h4>
     <ul>
-      <li>官方社区：<a href="https://www.renren.io/community" target="_blank">https://www.renren.io/community</a></li>
-      <li>前端Git地址：<a href="https://github.com/renrenio/renren-fast-vue" target="_blank">https://github.com/renrenio/renren-fast-vue</a></li>
-      <li>后台Git地址：<a href="https://gitee.com/renrenio/renren-fast" target="_blank">https://gitee.com/renrenio/renren-fast</a></li>
-      <li>代码生成器：<a href="https://gitee.com/renrenio/renren-generator" target="_blank">https://gitee.com/renrenio/renren-generator</a></li>
-      <li>如需关注项目最新动态，请Watch、Star项目，同时也是对项目最好的支持</li>
+      <li>教务处实验实践科工作人员可以在线审核项目立项申请内容。如果审核不通过，需填写审核意见并回退给指导老师。</li>
+      <li>指导老师可以删除自己的项目立项申请，但是不能删除已经审核通过的立项申请。</li>
     </ul>
-    <h3>官方QQ群</h3>
+    <h2>填写报名过程</h2>
     <ul>
-      <li>高级群：324780204(大牛云集，跟大牛学习新技能)</li>
-      <li>普通群：145799952(学习交流，互相解答各种疑问)</li>
+      <li>报名参赛方式分为个人赛和团队赛，指导老师填写参赛报名信息。参赛报名信息分为团队信息和团队成员信息，</li>
+    </ul>
+    <h2>项目结题过程</h2>
+    <h4>1、填写项目结题申请</h4>
+    <ul>
+      <li>比赛结束后，指导老师需在线填写各参赛队伍的获奖情况和资金实际使用情况，并上传结题报告书 PDF 扫描件。</li>
+    </ul>
+    <h4>2、审核项目结题申请</h4>
+    <ul>
+      <li>教务处实验实践科工作人员审核结题申请内容，并填写审核意见。</li>
+      <li>如果申请内容有问题则结题申请退回给组赛的指导老师，经组赛指导老师修改后重新提交。</li>
     </ul>
   </div>
 </template>

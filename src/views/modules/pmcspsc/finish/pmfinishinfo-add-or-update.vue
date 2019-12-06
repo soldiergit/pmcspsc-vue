@@ -393,6 +393,7 @@
       },
       // 新增 / 修改
       awardAddOrUpdateHandle (index, data) {
+        console.log('pmfinishinfo-add-or-update.vue awardAddOrUpdateHandle' + JSON.stringify(data))
         this.awardAddOrUpdateVisible = true
         this.$nextTick(() => {
           this.$refs.awardAddOrUpdate.init(data, index)
@@ -400,11 +401,8 @@
       },
       // 刷新参赛队伍信息
       refAwardList (data, index) {
-        console.log(index)
-        console.log(data)
         // 删除位于index的元素，并添加一个新元素data来替代被删除的元素
         this.teamList.splice(index, 1, data)
-        console.log(this.teamList)
       },
       // 上传成功
       uploadSuccess (res, file, fileList) {
