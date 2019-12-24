@@ -131,6 +131,7 @@
           }
         }
       }
+      window.onresize()
     },
     methods: {
       // 提交表单
@@ -193,11 +194,11 @@
 
   .login-main {
     position: absolute;
-    left: 40%;
-    margin-top: 180px;
+    left: 35%;
+    margin-top: 250px;
     padding: 50px 60px 40px;
     width: 470px;
-    min-height: 100%;
+    /*min-height: 100%;*/
     background: rgba(0, 0, 0, 0.4);
   }
   .login-title {
