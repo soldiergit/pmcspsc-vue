@@ -131,6 +131,7 @@
           } else {
             this.dataList = []
             this.totalPage = 0
+            this.$message.error(data.msg)
           }
           this.dataListLoading = false
         })
