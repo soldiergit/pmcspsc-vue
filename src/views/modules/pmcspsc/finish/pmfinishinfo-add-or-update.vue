@@ -304,7 +304,8 @@
             params: this.$http.adornParams({
               'page': 1,
               'limit': 10000,
-              'itemInfoStatus': 2,
+              'itemInfoStatus': 2, // 项目立项通过的
+              'itemInfoFinish': 0, // 项目未结题的
               'userId': this.$store.state.user.id
             })
           }).then(({data}) => {
@@ -342,34 +343,97 @@
       dataFormSubmit () {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            this.$http({
-              url: this.$http.adornUrl(`/pm/finish/${!this.dataForm.finishInfoId ? 'save' : 'update'}`),
-              method: 'post',
-              data: this.$http.adornData({
-                'finishInfoId': this.dataForm.finishInfoId || undefined,
-                'itemInfoId': this.dataForm.itemInfoId,
-                'finishIsDel': this.dataForm.finishIsDel,
-                'userId': this.$store.state.user.id,
-                'finishInfoStatus': this.dataForm.finishInfoStatus,
-                'pmTeamInfoEntities': this.teamList,
-                'pmFinishAttachEntity': this.dataForm.pmFinishAttachEntity,
-                'pmFundInfoEntity': this.dataForm.pmFundInfoEntity
+            // 判断是不是添加，因为添加接口使用rabbitmq消息中间件改造
+            if (!this.dataForm.finishInfoId) {
+              // loading
+              const loading = this.$loading({
+                lock: true,
+                text: '排队中...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
               })
-            }).then(({data}) => {
-              if (data && data.code === 0) {
-                this.$message({
-                  message: '操作成功',
-                  type: 'success',
-                  duration: 1500,
-                  onClose: () => {
-                    this.visible = false
-                    this.$emit('refreshDataList')
-                  }
+              this.$http({
+                url: this.$http.adornUrl(`/pm/finish/save`),
+                method: 'post',
+                data: this.$http.adornData({
+                  'finishInfoId': this.dataForm.finishInfoId || undefined,
+                  'itemInfoId': this.dataForm.itemInfoId,
+                  'finishIsDel': this.dataForm.finishIsDel,
+                  'userId': this.$store.state.user.id,
+                  'finishInfoStatus': this.dataForm.finishInfoStatus,
+                  'pmTeamInfoEntities': this.teamList,
+                  'pmFinishAttachEntity': this.dataForm.pmFinishAttachEntity,
+                  'pmFundInfoEntity': this.dataForm.pmFundInfoEntity
                 })
-              } else {
-                this.$message.error(data.msg)
+              }).then(({data}) => {
+                if (data && data.code === 0) {
+                  this.addInfo()
+                  loading.close()
+                } else {
+                  loading.close()
+                  this.$message.error(data.msg)
+                }
+              })
+            } else {
+              this.$http({
+                url: this.$http.adornUrl(`/pm/finish/update`),
+                method: 'post',
+                data: this.$http.adornData({
+                  'finishInfoId': this.dataForm.finishInfoId,
+                  'itemInfoId': this.dataForm.itemInfoId,
+                  'finishIsDel': this.dataForm.finishIsDel,
+                  'userId': this.$store.state.user.id,
+                  'finishInfoStatus': this.dataForm.finishInfoStatus,
+                  'pmTeamInfoEntities': this.teamList,
+                  'pmFinishAttachEntity': this.dataForm.pmFinishAttachEntity,
+                  'pmFundInfoEntity': this.dataForm.pmFundInfoEntity
+                })
+              }).then(({data}) => {
+                if (data && data.code === 0) {
+                  this.$message({
+                    message: '操作成功',
+                    type: 'success',
+                    duration: 1500,
+                    onClose: () => {
+                      this.visible = false
+                      this.$emit('refreshDataList')
+                    }
+                  })
+                } else {
+                  this.$message.error(data.msg)
+                }
+              })
+            }
+          }
+        })
+      },
+      // 查询是否新增成功 0：成功  -1：保存失败 2345： 排队中
+      addInfo () {
+        this.$http({
+          url: this.$http.adornUrl(`/pm/finish/saveResultStatus`),
+          method: 'post',
+          data: this.$http.adornData({
+            'itemInfoId': this.dataForm.itemInfoId,
+            'userId': this.$store.state.user.id
+          })
+        }).then(({data}) => {
+          if (data.code === 0) {
+            this.$message({
+              message: '操作成功',
+              type: 'success',
+              duration: 1500,
+              onClose: () => {
+                this.visible = false
+                this.$emit('refreshDataList')
               }
             })
+          } else if (data.code === -1) {
+            this.$message.error('新增项目结题失败，请重试！')
+          } else {
+            // 排队中，两秒后重试
+            setTimeout(() => {
+              this.addInfo()
+            }, 2000)
           }
         })
       },
@@ -393,7 +457,6 @@
       },
       // 新增 / 修改
       awardAddOrUpdateHandle (index, data) {
-        console.log('pmfinishinfo-add-or-update.vue awardAddOrUpdateHandle' + JSON.stringify(data))
         this.awardAddOrUpdateVisible = true
         this.$nextTick(() => {
           this.$refs.awardAddOrUpdate.init(data, index)
